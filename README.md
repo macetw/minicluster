@@ -34,7 +34,7 @@
   tar -zxvf kubecolor_0.3.2_linux_amd64.tar.gz kubecolor
   sudo mv kubecolor /usr/local/bin/
 
-  curl -s https://fluxcd.io/install.sh | sudo bash
+  curl -s https://fluxcd.io/install.sh | sudo FLUX_VERSION=2.1.2 bash
 
   kubectl apply -f flux-system/namespace.yaml
 
