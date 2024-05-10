@@ -1,0 +1,42 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/instance: flux-system
+    app.kubernetes.io/part-of: flux
+    app.kubernetes.io/version: v2.1.2
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+  name: more-access-needed
+rules:
+- apiGroups:
+  - buckets.source.toolkit.fluxcd.io
+  - apiextensions.k8s.io
+  resources:
+  - CustomResourceDefinition
+  verbs:
+  - patch
+
+#    flux-system   podinfo   35m   False   CustomResourceDefinition/buckets.source.toolkit.fluxcd.io dry-run failed, reason: Forbidden: customresourcedefinitions.apiextensions.k8s.io "buckets.source.toolkit.fluxcd.io" is forbidden: User "system:serviceaccount:flux-system:kustomize-controller" cannot patch resource "customresourcedefinitions" in API group "apiextensions.k8s.io" at the cluster scope
+#
+#    flux-system   podinfo     CustomResourceDefinition/buckets.source.toolkit.fluxcd.io dry-run failed
+#                               reason: Forbidden: customresourcedefinitions.apiextensions.k8s.io \"buckets.source.toolkit.fluxcd.io\" is forbidden: User \"system:serviceaccount:flux-system:kustomize-controller\" cannot patch resource \"customresourcedefinitions\" in API group \"apiextensions.k8s.io\" at the cluster scope"}
+
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/instance: flux-system
+    app.kubernetes.io/part-of: flux
+    app.kubernetes.io/version: v2.1.2
+  name: kustomize-controller-more-access
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: more-access-needed
+subjects:
+- kind: ServiceAccount
+  name: kustomize-controller
+  namespace: flux-system
