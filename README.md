@@ -18,16 +18,21 @@
     tar zxvf "${KREW}.tar.gz" &&
     ./"${KREW}" install krew
   )
-
-  export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
   echo export PATH='${KREW_ROOT:-$HOME/.krew}/bin:$PATH' > ~/.bashrc
 
   k3s check-config
   sudo k3s kubectl get pods
-  chmod a+r -R /etc/rancher/k3s/
+  chmod a+rw -R /etc/rancher/k3s/
+  # We also need write access if we intend to change the default namespace with the krew `ns` command
 
+  # Install k9s
   wget https://github.com/derailed/k9s/releases/download/v0.32.4/k9s_linux_amd64.deb
   sudo dpkg --install ./k9s_linux_amd64.deb
+
+  # Install kubecolor
+  wget https://github.com/kubecolor/kubecolor/releases/download/v0.3.2/kubecolor_0.3.2_linux_amd64.tar.gz
+  tar -zxvf kubecolor_0.3.2_linux_amd64.tar.gz kubecolor
+  sudo mv kubecolor /usr/local/bin/
 
   curl -s https://fluxcd.io/install.sh | sudo bash
 
