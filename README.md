@@ -5,14 +5,38 @@
   terraform plan
   terraform apply
 
-  curl -sfL https://get.k3s.io | sh - 
-  sudo k3s kubectl get node 
+  curl -sfL https://get.k3s.io | sh -
+  sudo k3s kubectl get node
+
+  # install krew:
+  (
+    set -x; cd "$(mktemp -d)" &&
+    OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
+    ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
+    KREW="krew-${OS}_${ARCH}" &&
+    curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
+    tar zxvf "${KREW}.tar.gz" &&
+    ./"${KREW}" install krew
+  )
+
+  export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+  echo export PATH='${KREW_ROOT:-$HOME/.krew}/bin:$PATH' > ~/.bashrc
 
   k3s check-config
   sudo k3s kubectl get pods
   chmod a+r -R /etc/rancher/k3s/
 
-  # how do I put this k3s cluster into my kube config??
+  wget https://github.com/derailed/k9s/releases/download/v0.32.4/k9s_linux_amd64.deb
+  sudo dpkg --install ./k9s_linux_amd64.deb
+
+  curl -s https://fluxcd.io/install.sh | sudo bash
+
+  kubectl apply -f flux-system/namespace.yaml
+
+  # make a fine-grained token and use it in the next step
+  # don't need it here: kubectl create secret generic flux-github-token --from-literal=token=github_pat_my-token  -n flux-system
+  # but we need it here:
+  flux bootstrap github  --owner macetw --repository minicluster --private=false --personal=true  --token=$token --token-auth --version=v2.2.3
 
   curl https://get.helm.sh/helm-canary-linux-amd64.tar.gz
   tar -xzvf ~/Downloads/helm-canary-linux-amd64.tar.gz
