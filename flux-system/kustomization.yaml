@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - rbac.yaml
   - gotk-components.yaml
   - podinfo-kustomization.yaml
   - podinfo-source.yaml
-  - rbac.yaml
