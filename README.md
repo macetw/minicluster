@@ -5,49 +5,16 @@
   terraform plan
   terraform apply
 
-  curl -sfL https://get.k3s.io | sh -
-  sudo k3s kubectl get node
-
-  # install krew:
-  (
-    set -x; cd "$(mktemp -d)" &&
-    OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
-    ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
-    KREW="krew-${OS}_${ARCH}" &&
-    curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
-    tar zxvf "${KREW}.tar.gz" &&
-    ./"${KREW}" install krew
-  )
-  echo export PATH='${KREW_ROOT:-$HOME/.krew}/bin:$PATH' > ~/.bashrc
-
-  k3s check-config
-  sudo k3s kubectl get pods
-  chmod a+rw -R /etc/rancher/k3s/
-  # We also need write access if we intend to change the default namespace with the krew `ns` command
-
-  # Install k9s
-  wget https://github.com/derailed/k9s/releases/download/v0.32.4/k9s_linux_amd64.deb
-  sudo dpkg --install ./k9s_linux_amd64.deb
-
-  # Install kubecolor
-  wget https://github.com/kubecolor/kubecolor/releases/download/v0.3.2/kubecolor_0.3.2_linux_amd64.tar.gz
-  tar -zxvf kubecolor_0.3.2_linux_amd64.tar.gz kubecolor
-  sudo mv kubecolor /usr/local/bin/
-
-  # Update the coredns with github.com
-  kubectl edit -n kube-system configmap coredns
-  # Add to NodeHosts:
-  #   140.82.113.3 github.com
-
-
-  curl -s https://fluxcd.io/install.sh | sudo FLUX_VERSION=2.1.2 bash
-
-  kubectl apply -f flux-system/namespace.yaml
+  # Run script to install k3s:
+  ./install-k3s.sh
 
   # make a fine-grained token and use it in the next step
-  # don't need it here: kubectl create secret generic flux-github-token --from-literal=token=github_pat_my-token  -n flux-system
-  # but we need it here:
-  flux bootstrap github  --owner macetw --repository minicluster --private=false --personal=true  --token=$token --token-auth --version=v2.2.3
+  # Repo access needed:
+  #   * Administration: Read & Write
+  #   * Contents: Read & Write
+  #
+  # We need it here:
+  flux bootstrap github  --owner macetw --repository minicluster --private=false --personal=true  --token=$token --token-auth --version=v2.1.2
 
   curl https://get.helm.sh/helm-canary-linux-amd64.tar.gz
   tar -xzvf ~/Downloads/helm-canary-linux-amd64.tar.gz
