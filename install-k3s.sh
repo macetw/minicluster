@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-if [ ! -z GITHUB_TOKEN ]; then
+if [ -z "$GITHUB_TOKEN" ]; then
     echo -n Github token:\ 
     read GITHUB_TOKEN
     export GITHUB_TOKEN
@@ -18,12 +18,13 @@ k3s check-config
 # chmod a+rw -R /etc/rancher/k3s/
 
 sudo chmod a+r /etc/rancher/k3s/k3s.yaml
-cat /etc/rancher/k3s/k3s.yaml >! ~/.kube/config
+cat /etc/rancher/k3s/k3s.yaml > ~/.kube/config
 
-kubectl get -o yaml -n kube-system configmap coredns --kubeconfig=/etc/rancher/k3s/k3s.yaml > cm.yaml
-sed -i '/NodeHosts/a \    140.82.113.3 github.com' cm.yaml
-kubectl apply -n kube-system --kubeconfig=/etc/rancher/k3s/k3s.yaml -f cm.yaml
+kubectl get -o yaml -n kube-system configmap coredns > /tmp/cm.yaml
+sed -i '/NodeHosts/a \    140.82.113.3 github.com' /tmp/cm.yaml
+kubectl apply -n kube-system -f /tmp/cm.yaml
+rm -f /tmp/cm.yaml
 
-curl -s https://fluxcd.io/install.sh | sudo FLUX_VERSION=2.1.2 bash
+curl -s https://fluxcd.io/install.sh | sudo FLUX_VERSION=2.3.0 bash
 
-flux bootstrap github --owner macetw --repository minicluster --private=false --personal=true --token=$token --version=v2.1.2 --kubeconfig=/etc/rancher/k3s/k3s.yaml
+flux bootstrap github --owner macetw --repository minicluster --private=false --personal=true --token=$token --version=v2.3.0
